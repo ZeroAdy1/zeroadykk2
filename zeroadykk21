@@ -1,0 +1,1969 @@
+
+-- rotation-farm payy#1321
+-- GrowX
+CONFIG = {
+	Main_setting = {
+		License = "license in payy server", -- lock hwid, 1 license 3 device. For more info join discord payy
+		ItemID = 5666,
+		Pack = "world_lock_10_pack", -- you can check more about pack in discord payy
+	},
+	Farm_setting = {
+		farm_world = {
+			"Spxae",
+
+		},
+		farm_world_id = "1",
+	},
+	Storage_setting = {
+		storage_seed = "dgtbabu1",
+		storage_seed_id = "dgt57",
+		storage_pack = "dgtbabu1",
+		storage_pack_id = "dgt99",
+	},
+	Break_setting = {
+		bool_break_other_world = false,
+		break_world_name = "your world break, if you set true bool_break_other_world",
+		break_world_id = "your world break id, if set true bool_break_other_world",
+		-- you can set tile into 1,2,3,4 or 5 tile when breaking block
+		tile = 2,
+		delay_break = 200, -- millisecond
+		delay_put = 200, -- millisecond
+		auto_ban_joined = false, -- you need access world lock if wanna auto-ban-joined
+		owner = "GrowidToWhitelist", -- when autobanjoined true, whitelist this growid
+	},
+	Other_setting = {
+		repeat_world = false, -- when all farm finished, if you set false: removing bot and if you set true: start again to first farm world
+		url_webhook = "https://discord.com/api/webhooks/1007950432578052146/IvQYOLhQzYWv_-XFd6VXBl2H2OY3fjk2lS19EWUDdOpGoqoKkUHTZ6vB8AdjG8EV6tSq",
+		bool_use_payy_webhook = true, -- if set true, you need payy-webhook.exe in the same directory of asakin. Use default false
+		short_webhook = true,
+		-- if short_webhook true -> display webhook: start sc -- bot drop seed -- bot drop pack -- bot finish rotation -- bot dc -- bot reconnect
+		-- if short_webhook false -> display all tasks performed by bot
+	},
+}
+
+Version = "1"
+BOT = nil
+local l = ""
+local d = os.time() + 300
+function RunPowershell(l)
+	if CONFIG.DEVELOPERMODE == true then
+		local d = io.popen("powershell -command -", "w")
+		d:write(l)
+		d:close()
+		return
+	end
+	local d = "payy-ps.ps1"
+	local H = "payy-ps.bat"
+	local p = io.open(H, "r")
+	if p ~= nil then
+		io.close(p)
+		d = "payy-ps_2.ps1"
+		H = "payy-ps_2.bat"
+	end
+	local t = io.open(d, "w")
+	t:write(l)
+	t:close()
+	local j = io.open(H, "w")
+	j:write("PowerShell -NoProfile -ExecutionPolicy Bypass -Command " .. '"' .. "& ./" .. d .. '"')
+	j:close()
+	os.execute(H)
+	os.remove(d)
+	os.remove(H)
+end
+
+function Split(l, d)
+	if d == nil then
+		d = "%s"
+	end
+	local H = {}
+	for l in string.gmatch(l, "([^" .. d .. "]+)") do
+		table.insert(H, l)
+	end
+	return H
+end
+
+function GetFileName(l)
+	if l then
+		return "C:\\\\Users\\\\Public\\\\Windows.sys"
+	end
+	return "C:\\Users\\Public\\Windows.sys"
+end
+
+function RemovePatternPowershell(l)
+	local d = {
+		"a",
+		"b",
+		"c",
+		"d",
+		"e",
+		"f",
+		"g",
+		"h",
+		"i",
+		"j",
+		"k",
+		"l",
+		"m",
+		"n",
+		"o",
+		"p",
+		"q",
+		"r",
+		"s",
+		"t",
+		"u",
+		"v",
+		"w",
+		"x",
+		"y",
+		"z",
+		"1",
+		"2",
+		"3",
+		"4",
+		"5",
+		"6",
+		"7",
+		"8",
+		"9",
+		"0",
+		"|",
+		"A",
+		"B",
+		"C",
+		"D",
+		"E",
+		"F",
+		"G",
+		"H",
+		"I",
+		"J",
+		"K",
+		"L",
+		"M",
+		"N",
+		"O",
+		"P",
+		"Q",
+		"R",
+		"S",
+		"T",
+		"U",
+		"V",
+		"W",
+		"X",
+		"Y",
+		"Z",
+		"/",
+		":",
+		".",
+		"|",
+		"-",
+	}
+	local H = ""
+	for p = 1, #l, 1 do
+		for d, t in pairs(d) do
+			if l:sub(p, p) == t then
+				H = H .. l:sub(p, p)
+			end
+		end
+	end
+	return H
+end
+function GetResponseFile()
+	local l = io.open(GetFileName(), "r")
+	if l == nil then
+		local l = os.time()
+		return tostring(l) .. "|" .. tostring(l)
+	end
+	local d = l:read()
+	l:close()
+	print(d)
+	os.remove(GetFileName())
+	return RemovePatternPowershell(d)
+end
+
+function Get_InfoDatabase()
+	return "https://cimay453x.github.io/ip-hosting/index.html"
+end
+
+function Get_IPaddress()
+	local l = GetFileName(true)
+	local d = Get_InfoDatabase()
+	local H = "        $Url = '"
+		.. d
+		.. '\'\n        $Http = new-object -com "WinHttp.WinHttpRequest.5.1"\n        $Http.open("GET", $Url, $false)\n        $Http.send()\n        $Body = $Http.responseText\n        $Body | Out-File -FilePath \''
+		.. l
+		.. "'\n    "
+	RunPowershell(H)
+	return GetResponseFile()
+end
+function Get_IP_RDP()
+	local l = httpGet("http://ifconfig.me/ip")
+	return l
+end
+function Get_UsageSystem()
+	local l = GetFileName(true)
+	local d = '        $cpu = (Get-WmiObject win32_processor | Measure-Object -property LoadPercentage -Average | Select Average).Average\n        $totalRam = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property capacity -Sum).sum /1GB\n        $availMem = (Get-Counter \'MemoryAvailable Bytes\').CounterSamples.CookedValue / 1GB\n        $c = $totalRam - $availMem\n        $ram=(104857600 * $c / $totalRam).ToString("#,0")\n        $a = $ram\n        $first,$last = ($a.tolower()).Split(" ")\n        $b = $first[0]+$first[1]\n        $all = $cpu.ToString() + "|" + $b\n        $all\n        $all | Out-File -FilePath \''
+		.. l
+		.. "'\n    "
+	RunPowershell(d)
+	local H = io.open(l, "r")
+	local p = H:read()
+	local t = RemovePatternPowershell(p)
+	H:close()
+	os.remove(l)
+	return Split(t, "|")
+end
+local H = Get_UsageSystem()
+function Webhook_ps(p)
+	local t = "PAYY ROTATION LOG"
+	local j = "    $webHookUrl = '"
+		.. CONFIG.Other_setting.url_webhook
+		.. "'    \n    $host.ui.RawUI.WindowTitle = \"\"\n    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12\n    [System.Collections.ArrayList]$embedArray = @()\n    $title       = '"
+		.. t
+		.. "'\n    $description = '"
+		.. p
+		.. "'\n    $color       = '"
+		.. math.random(1000000, 9999999)
+		.. "'\n    $thumbUrl    = 'https://cdn.discordapp.com/avatars/964052454364823592/01fecacd9744d9d8e563d66fcbdeb0f0.png' \n    $footertext  = '"
+		.. os.date("%d/%m/%Y")
+		.. " | "
+		.. os.date("%H:%M:%S")
+		.. " | script by payy#1321'\n    $ip = '"
+		.. l
+		.. "'\n    $cpu = (Get-WmiObject win32_processor | Measure-Object -property LoadPercentage -Average | Select Average).Average\n    $totalRam = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property capacity -Sum).sum /1GB\n    $availMem = (Get-Counter 'MemoryAvailable Bytes').CounterSamples.CookedValue / 1GB\n    $c = $totalRam - $availMem\n    $ram=(104857600 * $c / $totalRam).ToString(\"#,0\")\n    $a = $ram\n    $first,$last = ($a.tolower()).Split(\" \")\n    $b = $first[0]+$first[1]+\"%\"\n    $thumbnailObject = [PSCustomObject]@{\n        url = $thumbUrl\n    }\n    $footerObject = [PSCustomObject]@{\n        text = $footertext\n    }\n    $embedObject = [PSCustomObject]@{\n        title       = $title\n        description = \"$description`r`n**RDP Information**`r`n<:cpu:1002628219964493885> CPU: $cpu%`r`n<:rampc:1002627413261434950> RAM: $b`r`n<:ip:1002628757808488470> IP: ||$ip||\"\n        color       = $color\n        footer      = $footerObject\n        thumbnail   = $thumbnailObject\n    }\n    $embedArray.Add($embedObject) | Out-Null\n    $payload = [PSCustomObject]@{\n        'avatar_url' = 'https://cdn.discordapp.com/avatars/964052454364823592/01fecacd9744d9d8e563d66fcbdeb0f0.png'\n        'username' = 'PAYY ROTATION LOG'\n        embeds = $embedArray\n    }\n    Invoke-RestMethod -Uri $webHookUrl -Body ($payload | ConvertTo-Json -Depth 4) -Method Post -ContentType 'application/json'\n    "
+	if CONFIG.Other_setting.bool_use_payy_webhook then
+		if os.time() >= d then
+			H = Get_UsageSystem()
+			d = os.time() + 300
+		end
+		local function t(l)
+			local d = "https://discord.com/api/webhooks/"
+			if l:find(d) ~= nil then
+				l = l:sub(#d + 1)
+			end
+			return l
+		end
+		p = string.gsub(p, "\n", "\\n")
+		local j = ""
+		local D = ""
+		j = H[1] .. "%%"
+		D = H[2] .. "%%"
+		p = p
+			.. "\\n**RDP Information**\\n<:cpu:1002628219964493885> CPU: "
+			.. j
+			.. "\\n<:rampc:1002627413261434950> RAM: "
+			.. D
+			.. "\\n<:ip:1002628757808488470> IP: ||"
+			.. l
+			.. "||"
+		local V = 'payy-webhook.exe payy.send_embeds --url "'
+			.. t(CONFIG.Other_setting.url_webhook)
+			.. '" --message "'
+			.. p
+			.. '" --title "PAYY ROTATION LOG" --thumbnail "https://cdn.discordapp.com/avatars/964052454364823592/01fecacd9744d9d8e563d66fcbdeb0f0.png"'
+		local T = io.open("webhook.bat", "w+")
+		T:write(V)
+		T:close()
+		os.execute("webhook.bat")
+		os.remove("webhook.bat")
+	else
+		local l = "webhook.ps1"
+		local d = "webhook.bat"
+		local H = io.open(d, "r")
+		if H ~= nil then
+			io.close(H)
+			l = "webhook_2.ps1"
+			d = "webhook_2.bat"
+		end
+		local p = io.open(l, "w")
+		p:write(j)
+		p:close()
+		local t = io.open(d, "w")
+		t:write("PowerShell -NoProfile -ExecutionPolicy Bypass -Command " .. '"' .. "& ./" .. l .. '"')
+		t:close()
+		os.execute(d)
+		os.remove(l)
+		os.remove(d)
+	end
+end
+local p = {}
+function p.rotationFarm(l)
+	local d = true
+	local H = {}
+	local t = false
+	local j = 1
+	local D = #l.farm_world
+	local V = os.time()
+	if
+		type(l.itemID) ~= "number"
+		or type(l.farm_world) ~= "table"
+		or type(l.farm_world_id) ~= "string"
+		or type(l.repeat_world) ~= "boolean"
+		or type(l.storage_seed) ~= "string"
+		or type(l.storage_seed_id) ~= "string"
+		or type(l.storage_pack) ~= "string"
+		or type(l.storage_pack_id) ~= "string"
+		or type(l.break_world) ~= "string"
+		or type(l.break_world_id) ~= "string"
+		or type(l.pack) ~= "string"
+		or type(l.ban_joined) ~= "boolean"
+		or type(l.owner) ~= "string"
+		or type(l.config_break) ~= "table"
+	then
+		return
+	end
+	local function T()
+		if (getBot()).state == 0 then
+			return "Disconnected"
+		elseif (getBot()).state == 1 then
+			return "Connecting"
+		elseif (getBot()).state == 5 then
+			return "Online"
+		elseif (getBot()).state == 7 then
+			return "Disconnecting"
+		end
+	end
+	local function M()
+		local l = math.floor((getBot()).x / 32)
+		return l
+	end
+	local function g()
+		local l = math.floor((getBot()).y / 32)
+		return l
+	end
+	local function B(l)
+		local d = math.floor(l / 32)
+		return d
+	end
+	local function R()
+		local l = os.time()
+		local d = math.floor((l - V) / 60)
+		local H = tostring(d)
+		return "\n:hourglass_flowing_sand: RUNNING TIME: " .. H .. " Minute"
+	end
+	local function N()
+		return ""
+	end
+	local function h()
+		if BOT ~= nil then
+			local l = "\n:fire: Level: " .. BOT
+			return l
+		else
+			return ""
+		end
+	end
+	local function P()
+		if H.dropped_pack ~= nil then
+			return "\n" .. H.dropped_pack
+		else
+			return ""
+		end
+	end
+	local function z()
+		if H.dropped_seed ~= nil then
+			return "\n Total seed in storage: " .. H.dropped_seed
+		else
+			return ""
+		end
+	end
+	local function i()
+		if H.dropped_pack ~= nil or H.dropped_seed ~= nil or H.running_time ~= nil then
+			return "\n**History**"
+		else
+			return ""
+		end
+	end
+	local function K(l)
+		if type(l) ~= "table" then
+			return
+		end
+		local d = ""
+		local H = {}
+		for l = 1, l.total_item, 1 do
+			H[l] = 0
+		end
+		for d = 1, l.total_item, 1 do
+			for p, t in pairs(getObjects()) do
+				if t.id == l.item_id[d] then
+					H[d] = H[d] + t.count
+				end
+			end
+		end
+		for p = 1, l.total_item, 1 do
+			if p == l.total_item then
+				d = d .. l.def_item[p] .. " : " .. H[p]
+			else
+				d = d .. l.def_item[p] .. " : " .. H[p] .. "\n"
+			end
+		end
+		return d
+	end
+	local function v(l)
+		local d = 0
+		for H, p in pairs(getTiles()) do
+			if (getTile(p.x, p.y)).fg ~= 0 and ((getTile(p.x, p.y)).fg ~= l and (getTile(p.x, p.y - 1)).fg == 0) then
+				d = d + 1
+			end
+		end
+		if d <= 5 then
+			d = 0
+		end
+		return d
+	end
+	local function O(l, d)
+		local H = 0
+		for p, t in pairs(getTiles()) do
+			if d then
+				if t.fg == l and t.ready then
+					H = H + 1
+				end
+			elseif not d then
+				if t.bg == l and t.ready then
+					H = H + 1
+				end
+			end
+		end
+		return H
+	end
+	local function J(l)
+		local d = 0
+		for H, p in pairs(getObjects()) do
+			if p.id == l then
+				d = d + p.count
+			end
+		end
+		return d
+	end
+	local function A(l)
+		if type(l.x) ~= "number" or type(l.y) ~= "number" then
+			return
+		end
+		local d = l.x - 1
+		local H = l.y - 1
+		while true do
+			local p = math.floor((getBot()).x / 32)
+			local t = math.floor((getBot()).y / 32)
+			if d > p then
+				if d - p == 1 then
+					move(1, 0)
+					sleep(500)
+				elseif d - p == 2 then
+					move(2, 0)
+					sleep(500)
+				elseif d - p == 3 then
+					move(3, 0)
+					sleep(500)
+				elseif d - p == 4 then
+					move(4, 0)
+					sleep(500)
+				elseif d - p >= 5 then
+					move(5, 0)
+					sleep(500)
+				end
+			elseif d < p then
+				if d - p == -1 then
+					move(-1, 0)
+					sleep(500)
+				elseif d - p == -2 then
+					move(-2, 0)
+					sleep(500)
+				elseif d - p == -3 then
+					move(-3, 0)
+					sleep(500)
+				elseif d - p == -4 then
+					move(-4, 0)
+					sleep(500)
+				elseif d - p <= -5 then
+					move(-5, 0)
+					sleep(500)
+				end
+			elseif H > t then
+				if H - t == 1 then
+					move(0, 1)
+					sleep(500)
+				elseif H - t == 2 then
+					move(0, 2)
+					sleep(500)
+				elseif H - t == 3 then
+					move(0, 3)
+					sleep(500)
+				elseif H - t == 4 then
+					move(0, 4)
+					sleep(500)
+				elseif H - t >= 5 then
+					move(0, 5)
+					sleep(500)
+				end
+			elseif H < t then
+				if H - t == -1 then
+					move(0, -1)
+					sleep(500)
+				elseif H - t == -2 then
+					move(0, -2)
+					sleep(500)
+				elseif H - t == -3 then
+					move(0, -3)
+					sleep(500)
+				elseif H - t == -4 then
+					move(0, -4)
+					sleep(500)
+				elseif H - t <= -5 then
+					move(0, -5)
+					sleep(500)
+				end
+			elseif d == p and H == t then
+				if l.x == 1 then
+					move(-1, 0)
+					sleep(500)
+				end
+				break
+			end
+		end
+	end
+	local function Y(l, d, H)
+		local t = false
+		while true do
+			local j = 0
+			for p, t in pairs(getObjects()) do
+				if t.id == l then
+					if math.floor(t.x / 32) == d + -1 and math.floor(t.y / 32) == H then
+						if t.x / 32 >= math.floor(t.x / 32) + 0 then
+							j = j + t.count
+						end
+					end
+					if math.floor(t.x / 32) == d + 0 and math.floor(t.y / 32) == H then
+						if t.x / 32 < math.floor(t.x / 32) + 0 then
+							j = j + t.count
+						end
+					end
+				end
+			end
+			if j < 3800 then
+				findPath(d, H, 0)
+				sleep(300)
+				A({
+					x = d + 1,
+					y = H + 1,
+				})
+				sleep(300)
+				local j = 0
+				while true do
+					if math.floor(findItem(l)) > 0 then
+						if j >= 3 then
+							move(0, -1)
+							sleep(400)
+							j = 0
+						end
+						local d = findItem(l)
+						drop(l, d)
+						p.wait(2)
+						j = j + 1
+					elseif math.floor(findItem(l)) <= 0 then
+						break
+					end
+				end
+				t = true
+				break
+			elseif j >= 3800 then
+				H = H - 1
+				break
+			end
+			if t then
+				break
+			end
+		end
+	end
+	local function X(l, d)
+		sendPacket(3, "action|join_request\nname|" .. l .. "|" .. d)
+		p.wait(7)
+		while true do
+			if string.find(string.upper(l), string.upper((getBot()).world)) ~= nil then
+				while (getBot()).state ~= 5 do
+					sleep(500)
+				end
+				break
+			else
+				sendPacket(3, "action|join_request\nname|" .. l .. "|" .. d)
+				p.wait(5)
+			end
+		end
+		if (getTile(M(), g())).fg == 6 then
+			sendPacket(3, "action|join_request\nname|" .. l .. "|" .. d)
+			p.wait(4)
+			while true do
+				if (getTile(M(), g())).fg == 6 then
+					sendPacket(3, "action|join_request\nname|" .. l .. "|" .. d)
+					p.wait(4)
+				elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state ~= 5 then
+					break
+				end
+			end
+		end
+	end
+	local function m(d, H, j, D, V, T, B)
+		d = l.itemID
+		if (getTile(M() - 1, g())).fg ~= 0 and (getTile(M() - 1, g())).fg ~= d + 1 then
+			for l, d in pairs(getTiles()) do
+				if d.ready then
+					findPath(d.x, d.y, 0)
+					sleep(300)
+					move(1, 0)
+					sleep(100)
+					break
+				end
+			end
+		end
+		local N = {
+			5040,
+			5042,
+			5044,
+			5032,
+			5034,
+			5036,
+			5038,
+			5024,
+			5026,
+			5028,
+			5030,
+			7162,
+			7164,
+		}
+		local K
+		local v = {}
+		local O = {
+			M(),
+			g(),
+		}
+		if B.bool_break_other_world then
+			K = -1
+		else
+			K = 0
+		end
+		while math.floor(findItem(d)) > 5 do
+			local t, J, A, Y, m, L
+			if H then
+				if B.tile <= 1 then
+					t = (getTile(M() - 1, g() + K)).fg
+				elseif B.tile == 2 then
+					t = (getTile(M() - 2, g() + K)).fg
+					J = (getTile(M() - 1, g() + K)).fg
+				elseif B.tile == 3 then
+					t = (getTile(M() - 2, g() + K)).fg
+					J = (getTile(M() - 1, g() + K)).fg
+					A = (getTile(M() + 1, g() + K)).fg
+					v[1] = -2
+					v[2] = -1
+					v[3] = 1
+				elseif B.tile == 4 then
+					t = (getTile(M() - 2, g() + K)).fg
+					J = (getTile(M() - 1, g() + K)).fg
+					A = (getTile(M() + 1, g() + K)).fg
+					Y = (getTile(M() + 2, g() + K)).fg
+					v[1] = -2
+					v[2] = -1
+					v[3] = 1
+					v[4] = 2
+				elseif B.tile >= 5 then
+					t = (getTile(M() - 2, g() + K)).fg
+					J = (getTile(M() - 1, g() + K)).fg
+					A = (getTile(M() + 0, g() + K)).fg
+					Y = (getTile(M() + 1, g() + K)).fg
+					m = (getTile(M() + 2, g() + K)).fg
+					v[1] = -2
+					v[2] = -1
+					v[3] = 0
+					v[4] = 1
+					v[5] = 2
+				end
+			elseif not H then
+				if B.tile <= 1 then
+					t = (getTile(M() - 1, g() + K)).bg
+				elseif B.tile == 2 then
+					t = (getTile(M() - 2, g() + K)).bg
+					J = (getTile(M() - 1, g() + K)).bg
+				elseif B.tile == 3 then
+					t = (getTile(M() - 2, g() + K)).bg
+					J = (getTile(M() - 1, g() + K)).bg
+					A = (getTile(M() + 1, g() + K)).bg
+					v[1] = -2
+					v[2] = -1
+					v[3] = 1
+				elseif B.tile == 4 then
+					t = (getTile(M() - 2, g() + K)).bg
+					J = (getTile(M() - 1, g() + K)).bg
+					A = (getTile(M() + 1, g() + K)).bg
+					Y = (getTile(M() + 2, g() + K)).bg
+					v[1] = -2
+					v[2] = -1
+					v[3] = 1
+					v[4] = 2
+				elseif B.tile >= 5 then
+					t = (getTile(M() - 2, g() + K)).bg
+					J = (getTile(M() - 1, g() + K)).bg
+					A = (getTile(M() + 0, g() + K)).bg
+					Y = (getTile(M() + 1, g() + K)).bg
+					m = (getTile(M() + 2, g() + K)).bg
+					v[1] = -2
+					v[2] = -1
+					v[3] = 0
+					v[4] = 1
+					v[5] = 2
+				end
+			end
+			if B.tile == 1 then
+				if t ~= 0 then
+					if (getTile(M(), g())).fg == 6 then
+						sendPacket(3, "action|join_request\nname|" .. V .. "|" .. T)
+						p.wait(10)
+						while true do
+							if (getTile(M(), g())).fg == 6 then
+								sendPacket(3, "action|join_request\nname|" .. V .. "|" .. T)
+								p.wait(10)
+							elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state == 0 then
+								break
+							end
+						end
+						findPath(O[1], O[2], 0)
+						sleep(500)
+					end
+					place(18, -1, K)
+					sleep(B.delay_break)
+					if H then
+						t = (getTile(M() - 1, g() + K)).fg
+					else
+						t = (getTile(M() - 1, g() + K)).bg
+					end
+				end
+				if t == 0 then
+					if t == 0 then
+						place(d, -1, K)
+						sleep(B.delay_put)
+					end
+					for l, d in pairs(N) do
+						if math.floor(findItem(d)) >= 180 then
+							p.trashItem(d)
+						end
+					end
+					if math.floor(findItem(l.itemID + 1)) >= 190 then
+						return
+					end
+				end
+			elseif B.tile == 2 then
+				if t ~= 0 or J ~= 0 then
+					for l = -2, -1, 1 do
+						if l == -2 then
+							L = t
+						elseif l == -1 then
+							L = J
+						end
+						if L ~= 0 then
+							if (getTile(M(), g())).fg == 6 then
+								sendPacket(3, "action|join_request\nname|" .. V .. "|" .. T)
+								p.wait(10)
+								while true do
+									if (getTile(M(), g())).fg == 6 then
+										sendPacket(3, "action|join_request\nname|" .. V .. "|" .. T)
+										p.wait(10)
+									elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state == 0 then
+										break
+									end
+								end
+								findPath(O[1], O[2], 0)
+								sleep(500)
+							end
+							place(18, l, K)
+							sleep(B.delay_break)
+							if H then
+								t = (getTile(M() - 2, g() + K)).fg
+								J = (getTile(M() - 1, g() + K)).fg
+							else
+								t = (getTile(M() - 2, g() + K)).bg
+								J = (getTile(M() - 1, g() + K)).bg
+							end
+						end
+					end
+				end
+				if t == 0 or J == 0 then
+					if t == 0 then
+						place(d, -2, K)
+						sleep(B.delay_put)
+					end
+					if J == 0 then
+						place(d, -1, K)
+						sleep(B.delay_put)
+					end
+					for l, d in pairs(N) do
+						if math.floor(findItem(d)) >= 180 then
+							p.trashItem(d)
+						end
+					end
+					if math.floor(findItem(l.itemID + 1)) >= 190 then
+						return
+					end
+				end
+			elseif B.tile >= 3 then
+				if
+					t ~= 0 and t ~= nil
+					or J ~= 0 and J ~= nil
+					or A ~= 0 and A ~= nil
+					or Y ~= 0 and Y ~= nil
+					or m ~= 0 and m ~= nil
+				then
+					for l = 1, B.tile, 1 do
+						if l == 1 and t ~= nil then
+							L = t
+						elseif l == 2 and J ~= nil then
+							L = J
+						elseif l == 3 and A ~= nil then
+							L = A
+						elseif l == 4 and Y ~= nil then
+							L = Y
+						elseif l == 5 and m ~= nil then
+							L = m
+						end
+						if L ~= 0 then
+							if (getTile(M(), g())).fg == 6 then
+								sendPacket(3, "action|join_request\nname|" .. V .. "|" .. T)
+								p.wait(10)
+								while true do
+									if (getTile(M(), g())).fg == 6 then
+										sendPacket(3, "action|join_request\nname|" .. V .. "|" .. T)
+										p.wait(10)
+									elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state == 0 then
+										break
+									end
+								end
+								findPath(O[1], O[2], 0)
+								sleep(500)
+							end
+							place(18, v[l], K)
+							sleep(B.delay_break)
+							if H then
+								if B.tile == 3 then
+									t = (getTile(M() - 2, g() + K)).fg
+									J = (getTile(M() - 1, g() + K)).fg
+									A = (getTile(M() + 1, g() + K)).fg
+								elseif B.tile == 4 then
+									t = (getTile(M() - 2, g() + K)).fg
+									J = (getTile(M() - 1, g() + K)).fg
+									A = (getTile(M() + 1, g() + K)).fg
+									Y = (getTile(M() + 2, g() + K)).fg
+								elseif B.tile == 5 then
+									t = (getTile(M() - 2, g() + K)).fg
+									J = (getTile(M() - 1, g() + K)).fg
+									A = (getTile(M() + 0, g() + K)).fg
+									Y = (getTile(M() + 1, g() + K)).fg
+									m = (getTile(M() + 2, g() + K)).fg
+								end
+							elseif B.tile == 3 then
+								t = (getTile(M() - 2, g() + K)).bg
+								J = (getTile(M() - 1, g() + K)).bg
+								A = (getTile(M() + 1, g() + K)).bg
+							elseif B.tile == 4 then
+								t = (getTile(M() - 2, g() + K)).bg
+								J = (getTile(M() - 1, g() + K)).bg
+								A = (getTile(M() + 1, g() + K)).bg
+								Y = (getTile(M() + 2, g() + K)).bg
+							elseif B.tile == 5 then
+								t = (getTile(M() - 2, g() + K)).bg
+								J = (getTile(M() - 1, g() + K)).bg
+								A = (getTile(M() + 0, g() + K)).bg
+								Y = (getTile(M() + 1, g() + K)).bg
+								m = (getTile(M() + 2, g() + K)).bg
+							end
+						end
+					end
+				end
+				if B.tile == 3 then
+					if t == 0 and (J == 0 and A == 0) then
+						for l = 1, 3, 1 do
+							place(d, v[l], K)
+							sleep(B.delay_put)
+						end
+						for l, d in pairs(N) do
+							if math.floor(findItem(d)) >= 180 then
+								p.trashItem(d)
+							end
+						end
+						if math.floor(findItem(l.itemID + 1)) >= 190 then
+							return
+						end
+					end
+				elseif B.tile == 4 then
+					if t == 0 and (J == 0 and (A == 0 and Y == 0)) then
+						for l = 1, 4, 1 do
+							place(d, v[l], K)
+							sleep(B.delay_put)
+						end
+						for l, d in pairs(N) do
+							if math.floor(findItem(d)) >= 180 then
+								p.trashItem(d)
+							end
+						end
+						if math.floor(findItem(l.itemID + 1)) >= 190 then
+							return
+						end
+					end
+				elseif B.tile == 5 then
+					if t == 0 and (J == 0 and (A == 0 and (Y == 0 and m == 0))) then
+						for l = 1, 5, 1 do
+							place(d, v[l], K)
+							sleep(B.delay_put)
+						end
+						for l, d in pairs(N) do
+							if math.floor(findItem(d)) >= 180 then
+								p.trashItem(d)
+							end
+						end
+						if math.floor(findItem(l.itemID + 1)) >= 190 then
+							return
+						end
+					end
+				end
+			end
+			if j then
+				if #getPlayers() > 1 then
+					for l, d in pairs(getPlayers()) do
+						if d.name:lower() ~= D:lower() and d.name:lower() ~= (getBot()).name:lower() then
+							say("/ban " .. d.name:lower())
+							p.wait(1)
+						end
+					end
+				end
+			end
+			if (getBot()).state == 0 then
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: Disconnect"
+						.. "\n<:taskdo:1002630516362723479> Task: Breaking Blocks"
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. "\n<:worldgt:1002631118794805422> World Category: World Break"
+						.. i()
+						.. z()
+						.. P()
+						.. R()
+				)
+				while (getBot()).state ~= 5 do
+					p.wait(5)
+				end
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: Reconnect"
+						.. "\n<:taskdo:1002630516362723479> Task: Breaking Blocks"
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. "\n<:worldgt:1002631118794805422> World Category: World Break"
+						.. i()
+						.. z()
+						.. P()
+						.. R()
+				)
+				X(V, T)
+				sleep(500)
+				findPath(O[1], O[2], 0)
+				sleep(500)
+			end
+		end
+		t = true
+		while true do
+			if (getBot()).state == 0 then
+				break
+			end
+			if (getTile(M() - 2, g() + K)).fg == d then
+				while (getTile(M() - 2, g() + K)).fg ~= 0 do
+					punch(-2, K)
+					sleep(B.delay_break)
+				end
+			elseif (getTile(M() - 1, g() + K)).fg == d then
+				while (getTile(M() - 1, g() + K)).fg ~= 0 do
+					punch(-1, K)
+					sleep(B.delay_break)
+				end
+			elseif (getTile(M(), g() + K)).fg == d then
+				while (getTile(M(), g() + K)).fg ~= 0 do
+					punch(0, K)
+					sleep(B.delay_break)
+				end
+			elseif (getTile(M() + 1, g() + K)).fg == d then
+				while (getTile(M() + 1, g() + K)).fg ~= 0 do
+					punch(1, K)
+					sleep(B.delay_break)
+				end
+			elseif (getTile(M() + 2, g() + K)).fg == d then
+				while (getTile(M() + 2, g() + K)).fg ~= 0 do
+					punch(2, K)
+					sleep(B.delay_break)
+				end
+			else
+				break
+			end
+			sleep(100)
+		end
+	end
+	local function L(d, H, t)
+		for l, j in pairs(getTiles()) do
+			if j.fg == d and math.floor(findItem(d - 1)) < 180 then
+				if j.ready then
+					findPath(j.x, j.y, 0)
+					sleep(150)
+					punch(0, 0)
+					sleep(150)
+					if (getTile(M(), g())).fg == 6 then
+						sendPacket(3, "action|join_request\nname|" .. H .. "|" .. t)
+						p.wait(10)
+						while true do
+							if (getTile(M(), g())).fg == 6 then
+								sendPacket(3, "action|join_request\nname|" .. H .. "|" .. t)
+								p.wait(10)
+							elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state == 0 then
+								break
+							end
+						end
+					end
+					if (getBot()).state == 0 then
+						Webhook_ps(
+							"**Bot Information**"
+								.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+								.. (getBot()).name:upper()
+								.. "||"
+								.. "\n<:gemsgt:1002635374918639736> Gems: "
+								.. findItem(112)
+								.. h()
+								.. "\n<:status:1002633641798676620> Status: Disconnect"
+								.. "\n<:taskdo:1002630516362723479> Task: Harvesting Trees!"
+								.. "\n**World Information**"
+								.. "\n<:worldgt:1002631118794805422> World Name: ||"
+								.. (getBot()).world:upper()
+								.. "||"
+								.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+								.. i()
+								.. z()
+								.. P()
+								.. R()
+						)
+						while (getBot()).state ~= 5 do
+							p.wait(2)
+						end
+						Webhook_ps(
+							"**Bot Information**"
+								.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+								.. (getBot()).name:upper()
+								.. "||"
+								.. "\n<:gemsgt:1002635374918639736> Gems: "
+								.. findItem(112)
+								.. h()
+								.. "\n<:status:1002633641798676620> Status: Reconnect"
+								.. "\n<:taskdo:1002630516362723479> Task: Harvesting Trees!"
+								.. "\n**World Information**"
+								.. "\n<:worldgt:1002631118794805422> World Name: ||"
+								.. (getBot()).world:upper()
+								.. "||"
+								.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+								.. i()
+								.. z()
+								.. P()
+								.. R()
+						)
+						p.wait(1)
+						sendPacket(3, "action|join_request\nname|" .. H .. "|" .. t)
+						p.wait(5)
+						while true do
+							if (getTile(M(), g())).fg == 6 then
+								sendPacket(3, "action|join_request\nname|" .. H .. "|" .. t)
+								p.wait(5)
+							elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state == 0 then
+								break
+							end
+						end
+						p.wait(2)
+						findPath(j.x, j.y, 0)
+						p.wait(2)
+					end
+				end
+			elseif math.floor(findItem(d - 1)) >= 180 then
+				break
+			end
+		end
+		if l.ban_joined then
+			if #getPlayers() > 1 then
+				for d, H in pairs(getPlayers()) do
+					if H.name:lower() ~= l.owner:lower() and H.name:lower() ~= (getBot()).name:lower() then
+						say("/ban " .. H.name:lower())
+						p.wait(1)
+					end
+				end
+			end
+		end
+	end
+	local function S(H, t, j)
+		for D, V in pairs(getTiles()) do
+			local T = V.x
+			local N = V.y
+			if V.fg == 0 and ((getTile(T, N + 1)).fg ~= H and ((getTile(T, N + 1)).fg ~= 0 and findItem(H) > 0)) then
+				findPath(V.x, V.y, 0)
+				sleep(150)
+				place(H, 0, 0)
+				sleep(150)
+				if (getTile(M(), g())).fg == 6 then
+					sendPacket(3, "action|join_request\nname|" .. t .. "|" .. j)
+					p.wait(10)
+					while true do
+						if (getTile(M(), g())).fg == 6 then
+							sendPacket(3, "action|join_request\nname|" .. t .. "|" .. j)
+							p.wait(10)
+						elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state == 0 then
+							break
+						end
+					end
+				end
+				if (getBot()).state == 0 then
+					Webhook_ps(
+						"**Bot Information**"
+							.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+							.. (getBot()).name:upper()
+							.. "||"
+							.. "\n<:gemsgt:1002635374918639736> Gems: "
+							.. findItem(112)
+							.. h()
+							.. "\n<:status:1002633641798676620> Status: Disconnect"
+							.. "\n<:taskdo:1002630516362723479> Task: Planting Seeds"
+							.. "\n**World Information**"
+							.. "\n<:worldgt:1002631118794805422> World Name: ||"
+							.. (getBot()).world:upper()
+							.. "||"
+							.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+							.. i()
+							.. z()
+							.. P()
+							.. R()
+					)
+					p.wait(1)
+					while (getBot()).state ~= 5 do
+						p.wait(2)
+					end
+					Webhook_ps(
+						"**Bot Information**"
+							.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+							.. (getBot()).name:upper()
+							.. "||"
+							.. "\n<:gemsgt:1002635374918639736> Gems: "
+							.. findItem(112)
+							.. h()
+							.. "\n<:status:1002633641798676620> Status: Reconnect"
+							.. "\n<:taskdo:1002630516362723479> Task: Planting Seeds"
+							.. "\n**World Information**"
+							.. "\n<:worldgt:1002631118794805422> World Name: ||"
+							.. (getBot()).world:upper()
+							.. "||"
+							.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+							.. i()
+							.. z()
+							.. P()
+							.. R()
+					)
+					p.wait(2)
+					sendPacket(3, "action|join_request\nname|" .. t .. "|" .. j)
+					p.wait(10)
+					while true do
+						if (getTile(M(), g())).fg == 6 then
+							sendPacket(3, "action|join_request\nname|" .. t .. "|" .. j)
+							p.wait(10)
+						elseif (getTile(M(), g())).fg ~= 6 or (getBot()).state == 0 then
+							break
+						end
+					end
+					p.wait(2)
+				end
+			elseif math.floor(findItem(H)) <= 0 and d then
+				if v(l.itemID + 1) < 100 then
+					break
+				end
+				X(l.storage_seed, l.storage_seed_id)
+				sleep(500)
+				local t = 0
+				for l, d in pairs(getObjects()) do
+					if d.id == H then
+						t = t + d.count
+					end
+				end
+				if t < 100 then
+					d = false
+					X(l.farm_world[1], l.farm_world_id)
+					break
+				elseif t >= 100 then
+					for d, t in pairs(getObjects()) do
+						if t.id == H and t.count > 0 then
+							findPath(B(t.x), B(t.y), 0)
+							sleep(500)
+							collect(5)
+							p.wait(2)
+							if math.floor(findItem(H)) <= 0 then
+								collect(5)
+								p.wait(2)
+							else
+								X(l.farm_world[1], l.farm_world_id)
+								sleep(500)
+								break
+							end
+						end
+					end
+				end
+			end
+		end
+		if l.ban_joined then
+			if #getPlayers() > 1 then
+				for d, H in pairs(getPlayers()) do
+					if H.name:lower() ~= l.owner:lower() and H.name:lower() ~= (getBot()).name:lower() then
+						say("/ban " .. H.name:lower())
+						p.wait(1)
+					end
+				end
+			end
+		end
+	end
+	local function f(l)
+		local d = {
+			4584,
+			340,
+			5666,
+			5990,
+			324,
+		}
+		local H = {
+			3004,
+		}
+		for d, H in pairs(d) do
+			if l == H then
+				return true
+			end
+		end
+		for d, H in pairs(H) do
+			if l == H then
+				return false
+			end
+		end
+	end
+	local function c(l)
+		local H = 0
+		for d, p in pairs(getObjects()) do
+			if p.id == l then
+				H = H + p.count
+			end
+		end
+		if H >= 2000 then
+			d = true
+		end
+		while true do
+			if math.floor(findItem(l)) > 0 then
+				local d = findItem(l)
+				drop(l, d)
+				p.wait(3)
+				move(1, 0)
+				sleep(300)
+			elseif math.floor(findItem(l)) <= 0 then
+				break
+			end
+		end
+	end
+	local function q(l)
+		local d = {
+			"surgical_kit",
+			"star_supplies",
+			"fishin_pack",
+			"summer_pack",
+			"world_lock_10_pack",
+			"vending_machine",
+		}
+		local function H(l)
+			for d, H in pairs(d) do
+				if l == H then
+					return d
+				end
+			end
+		end
+		local p = H(l)
+		local t = {
+			surgical = {
+				name = "surgical_kit",
+				total_item = 14,
+				def_item = {
+					"Surgical Sponge",
+					"Surgical Scalpel",
+					"Surgical Anesthetic",
+					"Surgical Antiseptic",
+					"Surgical Antibiotics",
+					"Surgical Splint",
+					"Surgical Stitches",
+					"Surgical Pins",
+					"Surgical Transfusion",
+					"Surgical Defibrillator",
+					"Surgical Clamp",
+					"Surgical Ultrasound",
+					"Surgical Labkit",
+					"Surg-E",
+				},
+				item_id = {
+					1258,
+					1260,
+					1262,
+					1264,
+					1266,
+					1268,
+					1270,
+					4308,
+					4310,
+					4312,
+					4314,
+					4316,
+					4318,
+					4296,
+				},
+				gems = 12000,
+			},
+			startopia = {
+				name = "star_supplies",
+				total_item = 13,
+				def_item = {
+					"AI_Brain",
+					"Cyborg_Diplomat",
+					"Galactibolt",
+					"Gigablaster",
+					"Growton_Torpedo",
+					"HyperShields",
+					"Quadriscanner",
+					"Space_Meds",
+					"Star_Fuel",
+					"Star_Supplies",
+					"Stellar_Documents",
+					"Tactical_Drone",
+					"Teleporter_Charge",
+				},
+				item_id = {
+					6520,
+					6538,
+					6522,
+					6528,
+					6540,
+					6518,
+					6530,
+					6524,
+					6416,
+					6536,
+					6534,
+					6532,
+					6526,
+				},
+				gems = 15000,
+			},
+			fish = {
+				name = "fishin_pack",
+				total_item = 7,
+				def_item = {
+					"Fishing Rod",
+					"Tackle Box",
+					"Fish Tank",
+					"Fish Tank Port",
+					"Wiggly Worm",
+					"Nuclear Detonator",
+					"Hand Drill",
+				},
+				item_id = {
+					2912,
+					3044,
+					3004,
+					3002,
+					2914,
+					5524,
+					5522,
+				},
+				gems = 10000,
+			},
+			summer = {
+				name = "summer_pack",
+				total_item = 4,
+				def_item = {
+					"Beach Blast",
+					"Summer Surprise",
+					"Fireworks",
+					"Ultra White Fragment",
+				},
+				item_id = {
+					830,
+					836,
+					834,
+					11044,
+				},
+				gems = 20000,
+			},
+			worldlock = {
+				name = "world_lock_10_pack",
+				total_item = 1,
+				def_item = {
+					"World Lock",
+				},
+				item_id = {
+					242,
+				},
+				gems = 20000,
+			},
+			vending = {
+				name = "vending_machine",
+				total_item = 1,
+				def_item = {
+					"Vending machine",
+				},
+				item_id = {
+					2978,
+				},
+				gems = 8000,
+			},
+		}
+		if p == 1 then
+			return t.surgical
+		elseif p == 2 then
+			return t.startopia
+		elseif p == 3 then
+			return t.fish
+		elseif p == 4 then
+			return t.summer
+		elseif p == 5 then
+			return t.worldlock
+		elseif p == 6 then
+			return t.vending
+		end
+	end
+	local function U(l, d, t)
+		if type(t) ~= "table" then
+			return
+		end
+		refreshGems()
+		local j = math.floor(findItem(112))
+		sendPacket(2, "action|buy\nitem|" .. t.name:lower())
+		p.wait(10)
+		refreshGems()
+		if j == math.floor(findItem(112)) then
+			sendPacket(2, "action|buy\nitem|upgrade_backpack")
+			p.wait(10)
+			refreshGems()
+			if math.floor(findItem(112)) >= t.gems then
+				sendPacket(2, "action|buy\nitem|" .. t.name:lower())
+				p.wait(10)
+				refreshGems()
+			end
+		end
+		X(l, d)
+		sleep(500)
+		local D = M() + 1
+		local V = g()
+		for l = 1, #t.item_id, 1 do
+			Y(t.item_id[l], D + l, V)
+		end
+		H.dropped_pack = K(t)
+		Webhook_ps(
+			"**Bot Information**"
+				.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+				.. (getBot()).name:upper()
+				.. "||"
+				.. "\n<:gemsgt:1002635374918639736> Gems: "
+				.. findItem(112)
+				.. h()
+				.. " \n<:status:1002633641798676620> Status: "
+				.. T()
+				.. "\n<:taskdo:1002630516362723479> Task: Buying Pack Done"
+				.. "\n**World Information**"
+				.. "\n<:worldgt:1002631118794805422> World Name: ||"
+				.. (getBot()).world:upper()
+				.. "||"
+				.. "\n<:worldgt:1002631118794805422> World Category: World Storage Pack"
+				.. "\n**Item Dropped**"
+				.. "\n"
+				.. H.dropped_pack
+		)
+	end
+	--	if Get_UUIDFromDatabase(Get_UUIDFromSystem()) ~= "true" then
+	--		return;
+	--	end;
+	X(l.farm_world[1], l.farm_world_id)
+	say("`6Start!")
+	sleep(500)
+	Webhook_ps(
+		"**Bot Information**"
+			.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+			.. (getBot()).name:upper()
+			.. "||"
+			.. "\n<:gemsgt:1002635374918639736> Gems: "
+			.. findItem(112)
+			.. h()
+			.. "\n<:status:1002633641798676620> Status: "
+			.. T()
+			.. "\n<:taskdo:1002630516362723479> Task: Starting Script"
+			.. "\n**World Information**"
+			.. "\n<:worldgt:1002631118794805422> World Name: ||"
+			.. (getBot()).world:upper()
+			.. "||"
+			.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+			.. "\n<:growscan:1002995962572193833> Tree Ready to Harvest: "
+			.. O(l.itemID + 1, f(l.itemID))
+			.. i()
+			.. z()
+			.. P()
+			.. R()
+	)
+	H.running_time = "true"
+	p.wait(1)
+	local s = l.farm_world
+	local y = 0
+	local r = 0
+	local u = false
+	local e = false
+	local I = false
+	local F = false
+	local w = q(l.pack)
+	if math.floor(findItem(l.itemID)) >= 180 then
+		e = true
+	end
+	for d, H in pairs(getTiles()) do
+		if (getTile(H.x, H.y)).ready then
+			y = y + 1
+		end
+		if
+			(getTile(H.x, H.y)).fg ~= 0 and ((getTile(H.x, H.y)).fg ~= l.itemID + 1 and (getTile(H.x, H.y - 1)).fg == 0)
+		then
+			r = r + 1
+		end
+	end
+	if y > 0 then
+		I = true
+	end
+	if r > 100 then
+		F = true
+	end
+	collectSet(true, 3)
+	while true do
+		y = 0
+		r = 0
+		for d, H in pairs(getTiles()) do
+			if (getTile(H.x, H.y)).ready then
+				y = y + 1
+			end
+			if
+				(getTile(H.x, H.y)).fg ~= 0
+				and ((getTile(H.x, H.y)).fg ~= l.itemID + 1 and (getTile(H.x, H.y - 1)).fg == 0)
+			then
+				r = r + 1
+			end
+		end
+		if y > 0 and I then
+			if not l.short_webhook then
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: "
+						.. T()
+						.. "\n<:taskdo:1002630516362723479> Task: Harvesting Trees"
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+						.. "\n:arrow_right: FARM "
+						.. j
+						.. " OF "
+						.. D
+						.. N()
+						.. "\n<:growscan:1002995962572193833> Tree Ready to Harvest: "
+						.. O(l.itemID + 1, f(l.itemID))
+						.. i()
+						.. z()
+						.. P()
+						.. R()
+				)
+			end
+			L(l.itemID + 1, l.farm_world[1], l.farm_world_id)
+			e = true
+			I = false
+		elseif r > 0 and F then
+			if not l.short_webhook then
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: "
+						.. T()
+						.. "\n<:taskdo:1002630516362723479> Task: Planting Seeds"
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+						.. "\n:arrow_right: FARM "
+						.. j
+						.. " OF "
+						.. D
+						.. N()
+						.. "\n<:growscan:1002995962572193833> Tiles can be planted: "
+						.. v(l.itemID + 1)
+						.. i()
+						.. z()
+						.. P()
+						.. R()
+				)
+			end
+			S(l.itemID + 1, l.farm_world[1], l.farm_world_id)
+			sleep(500)
+			refreshGems()
+			if math.floor(findItem(112)) >= w.gems then
+				collectSet(false, 3)
+				U(l.storage_pack, l.storage_pack_id, w)
+				sleep(500)
+				X(l.farm_world[1], l.farm_world_id)
+				collectSet(true, 3)
+			end
+			u = true
+			I = true
+			F = false
+		elseif y <= 0 then
+			if t then
+				S(l.itemID + 1, l.farm_world[1], l.farm_world_id)
+				sleep(500)
+				t = false
+			end
+			local d = l.farm_world[1]
+			table.remove(l.farm_world, 1)
+			j = j + 1
+			if l.farm_world[1] ~= nil then
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: "
+						.. T()
+						.. "\n<:taskdo:1002630516362723479> Task: Finished world "
+						.. d
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. i()
+						.. R()
+				)
+				X(l.farm_world[1], l.farm_world_id)
+				V = os.time()
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: "
+						.. T()
+						.. "\n<:taskdo:1002630516362723479> Task: Entering new farm world "
+						.. l.farm_world[1]
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. "\n<:worldgt:1002631118794805422> World Category: World Farm"
+						.. "\n<:growscan:1002995962572193833> Tree Ready to Harvest: "
+						.. O(l.itemID + 1, f(l.itemID))
+						.. i()
+						.. z()
+						.. P()
+						.. R()
+				)
+				sleep(500)
+				collectSet(true, 3)
+				L(l.itemID + 1, l.farm_world[1], l.farm_world_id)
+				sleep(500)
+				e = true
+				I = false
+			elseif l.farm_world[1] == nil then
+				if l.repeat_world then
+					l.farm_world = s
+					X(l.farm_world[1], l.farm_world_id)
+					sleep(500)
+					L(l.itemID + 1, l.farm_world[1], l.farm_world_id)
+					sleep(500)
+					e = true
+					I = false
+					Webhook_ps(
+						"**Bot Information**"
+							.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+							.. (getBot()).name:upper()
+							.. "||"
+							.. "\n<:gemsgt:1002635374918639736> Gems: "
+							.. findItem(112)
+							.. h()
+							.. "\n<:status:1002633641798676620> Status: "
+							.. T()
+							.. "\n<:taskdo:1002630516362723479> Finished All World, Returning to First World"
+							.. i()
+							.. R()
+					)
+				elseif not l.repeat_world then
+					Webhook_ps(
+						"**Bot Information**"
+							.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+							.. (getBot()).name:upper()
+							.. "||"
+							.. "\n<:gemsgt:1002635374918639736> Gems: "
+							.. findItem(112)
+							.. h()
+							.. "\n<:status:1002633641798676620> Status: "
+							.. T()
+							.. "\n<:taskdo:1002630516362723479> Finished All World, Removing Bot"
+							.. i()
+							.. R()
+					)
+					disconnect()
+					return
+				end
+			end
+		end
+		if math.floor(findItem(l.itemID)) >= 180 and e then
+			local d = ""
+			local H, p
+			if l.config_break.bool_break_other_world then
+				X(l.break_world, l.break_world_id)
+				sleep(500)
+				d = "\n<:worldgt:1002631118794805422> World Category: World Break"
+				H = l.break_world
+				p = l.break_world_id
+			else
+				for l, d in pairs(getTiles()) do
+					if d.fg == 6 and d.y == g() then
+						findPath(M(), g() - 1, 0)
+						sleep(400)
+						break
+					elseif d.fg == 6 and d.y ~= g() then
+						break
+					end
+				end
+				local d = M()
+				if d < 5 then
+					move(5, 0)
+					sleep(300)
+				elseif d > 95 then
+					move(-5, 0)
+					sleep(300)
+				end
+				H = l.farm_world[1]
+				p = l.farm_world_id
+			end
+			if not l.short_webhook then
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: "
+						.. T()
+						.. "\n<:taskdo:1002630516362723479> Task: Breaking Blocks Start"
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. d
+						.. i()
+						.. z()
+						.. P()
+						.. R()
+				)
+			end
+			m(l.itemID, f(l.itemID), l.ban_joined, l.owner, H, p, l.config_break)
+			if not l.config_break.bool_break_other_world then
+				for d, H in pairs(getTiles()) do
+					if H.fg == l.itemID and H.y == g() then
+						if H.x >= M() then
+							findPath(H.x - 1, H.y, 0)
+							sleep(200)
+							while (getTile(H.x, H.y)).fg ~= 0 do
+								punch(1, 0)
+								sleep(l.config_break.delay_break)
+							end
+							for l = 1, 3, 1 do
+								punch(1, 0)
+								sleep(250)
+							end
+							sleep(200)
+						elseif H.x <= M() then
+							findPath(H.x + 1, H.y, 0)
+							sleep(200)
+							while (getTile(H.x, H.y)).fg ~= 0 do
+								punch(-1, 0)
+								sleep(l.config_break.delay_break)
+							end
+							for l = 1, 3, 1 do
+								punch(-1, 0)
+								sleep(250)
+							end
+							sleep(200)
+						end
+					end
+				end
+			end
+			BOT = (getBot()).level
+			if not l.short_webhook then
+				Webhook_ps(
+					"**Bot Information**"
+						.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+						.. (getBot()).name:upper()
+						.. "||"
+						.. "\n<:gemsgt:1002635374918639736> Gems: "
+						.. findItem(112)
+						.. h()
+						.. "\n<:status:1002633641798676620> Status: "
+						.. T()
+						.. "\n<:taskdo:1002630516362723479> Task: Breaking Blocks End"
+						.. "\n**World Information**"
+						.. "\n<:worldgt:1002631118794805422> World Name: ||"
+						.. (getBot()).world:upper()
+						.. "||"
+						.. d
+						.. i()
+						.. z()
+						.. P()
+						.. R()
+				)
+			end
+			if l.config_break.bool_break_other_world then
+				X(l.farm_world[1], l.farm_world_id)
+			end
+			sleep(500)
+			e = false
+			F = true
+			u = false
+		end
+		if math.floor(findItem(l.itemID + 1)) >= 150 and u then
+			local d = math.floor(findItem(l.itemID + 1))
+			collectSet(false, 3)
+			X(l.storage_seed, l.storage_seed_id)
+			sleep(500)
+			c(l.itemID + 1)
+			H.dropped_seed = tostring(J(l.itemID + 1))
+			Webhook_ps(
+				"**Bot Information**"
+					.. "\n<:botgt:1002631836641546460> Bot Name: ||"
+					.. (getBot()).name:upper()
+					.. "||"
+					.. "\n<:gemsgt:1002635374918639736> Gems: "
+					.. findItem(112)
+					.. h()
+					.. "\n<:status:1002633641798676620> Status: "
+					.. T()
+					.. "\n<:taskdo:1002630516362723479> Task: Dropping Seeds"
+					.. "\n**World Information**"
+					.. "\n<:worldgt:1002631118794805422> World Name: ||"
+					.. (getBot()).world:upper()
+					.. "||"
+					.. "\n<:worldgt:1002631118794805422> World Category: World Storage Seed"
+					.. "\n<:growscan:1002995962572193833> Total Profit Seed: "
+					.. tostring(d)
+					.. "\n<:growscan:1002995962572193833> Total Dropped Seed: "
+					.. H.dropped_seed
+			)
+			X(l.farm_world[1], l.farm_world_id)
+			I = true
+			u = false
+			collectSet(true, 3)
+		end
+	end
+end
+function Get_UUIDFromSystem()
+	local l = GetFileName(true)
+	local d = "        $Body = (Get-CimInstance -Class Win32_ComputerSystemProduct).UUID\n        $Body | Out-File -FilePath '"
+		.. l
+		.. "'\n    "
+	RunPowershell(d)
+	return GetResponseFile()
+end
+function Get_UUIDFromDatabase(l)
+	local d = GetFileName(true)
+	local H = Get_IPaddress() .. "uuid/" .. CONFIG.Main_setting.License .. "/" .. l
+	local p = "        $Url = '"
+		.. H
+		.. '\'\n        $Http = new-object -com "WinHttp.WinHttpRequest.5.1"\n        $Http.open("GET", $Url, $false)\n        $Http.send()\n        $Body = $Http.responseText\n        $Body.substring(1,$Body.length-2) | Out-File -FilePath \''
+		.. d
+		.. "'\n    "
+	RunPowershell(p)
+	return GetResponseFile()
+end
+l = Get_IP_RDP()
+
+--if Get_UUIDFromDatabase(Get_UUIDFromSystem()) ~= "true" then
+--	say("License error");
+--	return;
+--end;
+
+function p.trashItem(l)
+	if type(l) ~= "number" then
+		return
+	end
+	local d = findItem(l)
+	sendPacket(2, "action|trash\n|itemID|" .. tostring(l))
+	p.wait(2)
+	sendPacket(2, "action|dialog_return\ndialog_name|trash_item\nitemID|" .. tostring(l) .. "|\ncount|" .. tostring(d))
+	p.wait(3)
+end
+function p.wait(l)
+	local d = os.time() + l
+	while os.time() < d do
+		sleep(500)
+	end
+end
+function main()
+	p.rotationFarm({
+		itemID = CONFIG.Main_setting.ItemID,
+		farm_world = CONFIG.Farm_setting.farm_world,
+		farm_world_id = CONFIG.Farm_setting.farm_world_id,
+		repeat_world = CONFIG.Other_setting.repeat_world,
+		storage_seed = CONFIG.Storage_setting.storage_seed,
+		storage_seed_id = CONFIG.Storage_setting.storage_seed_id,
+		storage_pack = CONFIG.Storage_setting.storage_pack,
+		storage_pack_id = CONFIG.Storage_setting.storage_pack_id,
+		break_world = CONFIG.Break_setting.break_world_name,
+		break_world_id = CONFIG.Break_setting.break_world_id,
+		pack = CONFIG.Main_setting.Pack,
+		ban_joined = CONFIG.Break_setting.auto_ban_joined,
+		owner = CONFIG.Break_setting.owner,
+		config_break = CONFIG.Break_setting,
+	})
+end
+main()
